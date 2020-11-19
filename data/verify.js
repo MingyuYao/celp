@@ -12,6 +12,13 @@ function convertId(doc) {
     return doc;
 }
 
+// Takes in a number argument.
+// Return true if the argument is non-empty, a number, and range from 1 to 5; otherwise return false.
+function validRating(num) {
+    if (!num || typeof num !== 'number' || num<1 || num>5) return false;
+    return true;
+}
+
 module.exports = {
     validString,
     convertId
