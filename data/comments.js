@@ -1,6 +1,7 @@
 const mongoCollections = require('../config/mongoCollections');
 const comments = mongoCollections.comments;
 const verify = require('./verify');
+const reviews = require('./reviews');
 
 let { ObjectId } = require('mongodb');
 
@@ -32,12 +33,9 @@ module.exports = {
         const newId = insertInfo.insertedId;
         const finComment = await this.getCommentById(newId.toString());
 
-        /* Add comment Id to respective review 
-        const review = await reviews.getReviewById(reviewId);
-        let reviewArray = review.comments;
-        reviewArray.push(newId.toString());
-        await reviews.updateReview(reviewId, undefined, undefined, undefined, undefined, undefined,
-                reviewArray, undefined, undefined);*/
+        /* Add comment Id to respective review */
+        const addtoReview = await reviews.updateReviewComment(reviewId, newId.toString(), "add");
+        if(!addtoReview) throw 'Comment is not added in review: '+reviewId;
 
         /* Add comment Id to respective user 
         const user = await users.getUserById(userId);
@@ -57,13 +55,9 @@ module.exports = {
         const commentCollection = await comments();
         const comment = await this.getCommentById(commentId);
 
-        /* Remove comment Id from respective review 
-        const review = await reviews.getReviewById(comment.reviewId);
-        let reviewArray = review.comments;
-        let reviewIndex = reviewArray.indexOf(commentId);
-        if (reviewIndex > -1) reviewArray.splice(reviewIndex, 1);
-        await reviews.updateReview(comment.reviewId, undefined, undefined, undefined, undefined,
-                undefined, reviewArray, undefined, undefined);*/
+        /* Remove comment Id from respective review */
+        const delfromReview = await reviews.updateReviewComment(reviewId, newId.toString(), "delete");
+        if(!delfromReview) throw 'Comment is not deleted in review: '+reviewId;
     
         /* Remove comment Id from respective user 
         const user = await users.getUserById(comment.userId);
@@ -106,5 +100,5 @@ module.exports = {
 
 }
 
-const reviews = require('./reviews');
+
 const users = require('./users');

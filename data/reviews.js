@@ -41,6 +41,14 @@ module.exports = {
         if (insertInfo.insertedCount === 0) throw 'Could not add review';
     
         const newId = insertInfo.insertedId;
+        /* Add Review Id to Restaurant
+        let updated = await restaurants.updateRestaurantReview(restaurantId, newId.toString(), "add");
+        if(!updated) throw 'Review is not updated in restaurant: '+restaurantId;
+         */
+        /* Add Review Id to User
+            updated = await users.updateUserReview(userId, newId.toString(), "add");
+        if(!updated) throw 'Review is not updated in user: '+userId;
+         */
         const finReview = await this.getReviewById(newId.toString());
         return finReview;
     },
@@ -83,6 +91,9 @@ module.exports = {
     	}catch(e){
     		throw e;
     	}
+    	const reviewCollection = await reviews();
+    	let review = await reviewCollection.findOne({ _id: ObjectId(id) });
+        if (review === null) throw 'No review with that id';
     	const updatedInfo = await reviewCollection.updateOne({_id: ObjectId(id)}, {$set: updater});
 		if (updatedInfo.modifiedCount === 0) {
 	      throw 'Error: the review is not modified (updater format is valid but nothing to update).';
@@ -98,12 +109,15 @@ module.exports = {
 	    }catch(e){
 	        throw "Error: id or cid is not a valid ObjectId!"
 	    }
+    	const reviewCollection = await reviews();
+    	let review = await reviewCollection.findOne({ _id: ObjectId(id) });
+        if (review === null) throw 'No review with that id';
 	    if(mode == "add"){
 	    	const updateInfo = await reviewCollection.updateOne({_id: ObjectId(id)},{$addToSet: {comments: cid}});
 		    if (!updateInfo.matchedCount && !updateInfo.modifiedCount) return false;
 		    return true;
 
-	    }else{
+	    }else{ //"delete"
 	    	const updateInfo = await reviewCollection.updateOne({_id: ObjectId(id)},{$pull: {comments: cid}});
 		    if (!updateInfo.matchedCount && !updateInfo.modifiedCount) return false;
 		    return true;
@@ -118,6 +132,9 @@ module.exports = {
 	    }catch(e){
 	        throw "Error: id or cid is not a valid ObjectId!"
 	    }
+	    const reviewCollection = await reviews();
+    	let review = await reviewCollection.findOne({ _id: ObjectId(id) });
+        if (review === null) throw 'No review with that id';
 	    if(mode == "like"){
 	    	const updateInfo = await reviewCollection.updateOne({_id: ObjectId(id)},{$addToSet: {likes: cid}});
 	    	await reviewCollection.updateOne({_id: ObjectId(id)},{$pull: {dislikes: cid}});
@@ -129,7 +146,7 @@ module.exports = {
 	    	await reviewCollection.updateOne({_id: ObjectId(id)},{$pull: {likes: cid}});
 		    if (!updateInfo.matchedCount && !updateInfo.modifiedCount) return false;
 		    return true;
-	    }else{
+	    }else{ //"unset"
 	    	await reviewCollection.updateOne({_id: ObjectId(id)},{$pull: {likes: cid}});
 	    	await reviewCollection.updateOne({_id: ObjectId(id)},{$pull: {dislikes: cid}});
 	    	return true;
@@ -140,11 +157,47 @@ module.exports = {
 
         let parsedId = ObjectId(reviewId);
         
+    	const commentCollection = await mongoCollections.comments();
         const reviewCollection = await reviews();
         const review = await this.getReviewById(reviewId);
         const deletionInfo = await reviewCollection.deleteOne({ _id: parsedId });
-        if (deletionInfo.deletedCount === 0) throw `Could not delete review with id of ${reviewId}`;
-
+        if (deletionInfo.deletedCount === 0) {
+        	throw `Could not delete review with id of ${reviewId}`;
+        } else{
+        	await commentCollection.remove({'reviewId': reviewId});
+        }
+        /* Delete Review Id to Restaurant
+        let updated = await restaurants.updateRestaurantReview(restaurantId, newId.toString(), "delete");
+        if(!updated) throw 'Review is not updated in restaurant: '+restaurantId;
+         */
+        /* Delete Review Id to User
+            updated = await users.updateUserReview(userId, newId.toString(), "delete");
+        if(!updated) throw 'Review is not updated in user: '+userId;
+         */
         return; 
+    },
+
+    async getAllReviewsOfUser(reviewerId) {
+        if (!verify.validString(reviewerId)) throw 'reviewerId is not a valid string.';
+
+        const reviewCollection = await reviews();
+        const reviewList = await reviewCollection.find({'reviewerId': { $eq: reviewerId}}).toArray();
+        for (let x of reviewList) {
+            x._id = x._id.toString();
+        }
+
+        return reviewList;
+    },
+
+    async getAllReviewsOfRestaurant(restaurantId) {
+        if (!verify.validString(restaurantId)) throw 'restaurantId is not a valid string.';
+
+        const reviewCollection = await reviews();
+        const reviewList = await reviewCollection.find({'restaurantId': { $eq: restaurantId}}).toArray();
+        for (let x of reviewList) {
+            x._id = x._id.toString();
+        }
+
+        return reviewList;
     }
 }
