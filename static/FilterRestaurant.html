@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* {
+  box-sizing: border-box;
+}
+
+#myInput {
+  background-position: 10px 12px;
+  background-repeat: no-repeat;
+  width: 100%;
+  font-size: 16px;
+  padding: 12px 20px 12px 40px;
+  border: 1px solid #ddd;
+  margin-bottom: 12px;
+}
+
+#myTable {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  width: 100%
+}
+
+#myTable td, #myTable th{
+  border: 1px solid #ddd;
+  margin-top: -1px; /* Prevent double borders */
+  background-color: #f6f6f6;
+  padding: 12px;
+  text-decoration: none;
+  font-size: 18px;
+  color: black;
+  display: inline-flex;
+}
+
+</style>
+</head>
+<body>
+
+<h2>My Restaurant</h2>
+
+<input type="text" id="myInput" onkeyup="fName()" placeholder="Search by name" title="Type in a name">
+<input type="text" id="myInput_2" onkeyup="fCuisine()" placeholder="Search by cuisine type" title="Type in a name">
+<input type="button" id="myInput_3" onclick="sortTable(order='asc')" value="Order by Rating (asc)">
+<input type="button" id="myInput_4" onclick="sortTable(order='desc')" value="Order by Rating (desc)">
+
+<table id="myTable">
+    <thead class="thead-light">
+        <th scope="col">Restaurant Name</th>
+        <th scope="col">Cuisine</th>
+        <th scope="col">Rating</th>
+    </thead>
+    <tbody>
+        <tr><td class='name'>McDonload</td>      <td class="cuisine">American</td>      <td class="rating">3</td></tr>
+        <tr><td class='name'>QDOBA Mexican Eats</td>       <td class="cuisine">Mexican</td>      <td class="rating">4</td></tr>
+
+        <tr><td class='name'>T Thai</td>       <td class="cuisine">Thai</td>      <td class="rating">5</td></tr>
+        <tr><td class='name'>No. 1</td>      <td class="cuisine">Chinese</td>      <td class="rating">5</td></tr>
+
+        <tr><td class='name'>O'Bagel</td>      <td class="cuisine">American</td>      <td class="rating">2</td></tr>
+        <tr><td class='name'>Chicken Factory</td>      <td class="cuisine">Korean</td>      <td class="rating">3</td></tr>
+        <tr><td class='name'>Picky Poke</td>       <td class="cuisine">Japan</td>      <td class="rating">4</td></tr>
+    </tbody>
+</table>
+
+<script>
+function fName() {
+    let input, filter, table, row, i, txtValue;
+    input = document.getElementById("myInput");
+    filter = input.value.toUpperCase();
+    table = document.getElementById("myTable");
+    for (i = 1; i < table.rows.length; i++) {
+        row = table.rows[i];
+        txtValue = row.cells[0].innerHTML;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    }
+}
+function fCuisine() {
+    let input, filter, table, row, i, txtValue;
+    input = document.getElementById("myInput_2");
+    filter = input.value.toUpperCase();
+    table = document.getElementById("myTable");
+    for (i = 1; i < table.rows.length; i++) {
+        row = table.rows[i];
+        txtValue = row.cells[1].innerHTML;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    }
+}
+function sortTable(order = 'asc') {
+  var table, rows, switching, i, x, y, shouldSwitch;
+  table = document.getElementById("myTable");
+  switching = true;
+  while (switching) {
+    switching = false;
+    rows = table.rows;
+    for (i = 1; i < (rows.length - 1); i++) {
+      shouldSwitch = false;
+      x = rows[i].cells[2];
+      y = rows[i + 1].cells[2];
+      if(order =='asc'){
+        if (Number.parseFloat(x.innerHTML) > Number.parseFloat(y.innerHTML)) {
+          shouldSwitch = true;
+          break;
+        }
+      }else{
+        if (Number.parseFloat(x.innerHTML) < Number.parseFloat(y.innerHTML)) {
+          shouldSwitch = true;
+          break;
+        }
+      }
+    }
+    if (shouldSwitch) {
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+    }
+  }
+}
+</script>
+
+</body>
+</html>
